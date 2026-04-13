@@ -3,7 +3,9 @@
 # Tab completion + inline suggestion for VS Code active file path
 # =============================================================================
 
-$GHOSTPATH_TMP_FILE = if ($IsWindows) {
+$isWindowsOS = $null -ne $IsWindows ? $IsWindows : ([System.Environment]::OSVersion.Platform.ToString() -match "Win32")
+
+$GHOSTPATH_TMP_FILE = if ($isWindowsOS) {
   $tempDir = if ($env:TEMP) { $env:TEMP } else { "C:\Temp" }
   Join-Path $tempDir "_ghostpath_active_file"
 } else {
