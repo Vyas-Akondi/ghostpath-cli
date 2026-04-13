@@ -32,36 +32,33 @@
 
 ## Installation
 
+You can install `ghostpath-cli` either globally (recommended) or locally in a specific project workspace.
+
+**Global Installation:**
 ```bash
 npm install -g ghostpath-cli
 ```
 
-This will automatically run a post-install script that:
-1. **Injects shell integration** into your `~/.zshrc` (macOS/Linux) and `$PROFILE` (Windows).
+**Local Installation:**
+```bash
+npm install ghostpath-cli
+```
+
+Whether installed globally or locally, it will automatically run a post-install script that:
+1. **Injects shell integration** into your `~/.zshrc` (macOS/Linux) and `$PROFILE` (Windows) securely using the exact absolute path of the installation.
 2. **Automatically attempts to install** the companion VS Code Extension if you have the `code` CLI available.
 
 ---
 
 ## VS Code Extension Setup
 
-If the automatic installation doesn't work, you can easily install the bundled VS Code extension manually. The command differs slightly depending on your Operating System:
+If the automatic installation doesn't work, the most reliable way to install the VS Code extension across all Operating Systems is manually via the VS Code interface.
 
-### macOS / Linux
-```bash
-# Install the bundled VSIX manually
-code --install-extension $(npm root -g)/ghostpath-cli/vscode-extension/ghostpath-vscode.vsix
-```
-
-### Windows (PowerShell)
-Due to a quirk with how npm outputs directory paths in PowerShell, you must trim the path first so VS Code doesn't try to open the extension as a text file!
-
-```powershell
-# Get the global node_modules path and trim it
-$extPath = Join-Path (npm root -g).Trim() "ghostpath-cli\vscode-extension\ghostpath-vscode.vsix"
-
-# Install the extension correctly
-code --install-extension "$extPath"
-```
+1. Open **Visual Studio Code**.
+2. Go to the **Extensions** panel (`Ctrl+Shift+X` or `Cmd+Shift+X`).
+3. Click the `...` menu at the top right and select **Install from VSIX...**
+4. Navigate to your installed `node_modules` folder (either local or global) and locate `node_modules/ghostpath-cli/vscode-extension/ghostpath-vscode.vsix`.
+5. Select the file to install it instantly.
 
 Or manually copy `vscode-extension/src/extension.js` into your own extension.
 
@@ -114,24 +111,15 @@ ghostpath setup --pwsh   # Setup PowerShell only
 
 ## Manual Shell Setup
 
-If the `postinstall` script didn't run automatically, you will need to add the module to your shell profile manually.
+If the `postinstall` script didn't run automatically, or if you moved your installation path, you can use the built-in CLI to safely configure your shell integration correctly.
 
-### macOS / Linux (Zsh)
-Add the following line to your `~/.zshrc` file:
+Simply run the built-in setup script:
 
-```zsh
-# Load ghostpath shell integration
-source "$(npm root -g)/ghostpath-cli/shell/ghostpath.zsh"
+```bash
+npx ghostpath setup
 ```
 
-### Windows (PowerShell)
-Add the following lines to your PowerShell `$PROFILE` file (you can open it by typing `notepad $PROFILE` in your terminal):
-
-```powershell
-# Load ghostpath PowerShell module
-$ghostpathModule = Join-Path (npm root -g).Trim() "ghostpath-cli\shell\ghostpath.psm1"
-Import-Module "$ghostpathModule"
-```
+This acts as a universal command that safely determines if you are running globally or locally, computes the exact directory, and gracefully sets up your shell scripts (`.zshrc` or `$PROFILE`) without you needing to do any copy-pasting.
 
 ---
 
