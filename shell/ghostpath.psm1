@@ -14,7 +14,9 @@ $GHOSTPATH_TMP_FILE = if ($IsWindows) {
 function Get-GhostpathFile {
   if (Test-Path $GHOSTPATH_TMP_FILE) {
     $content = Get-Content $GHOSTPATH_TMP_FILE -Raw -ErrorAction SilentlyContinue
-    return $content?.Trim()
+    if (![string]::IsNullOrWhiteSpace($content)) {
+      return $content.Trim()
+    }
   }
   return $null
 }
@@ -131,4 +133,4 @@ foreach ($cmd in $ghostpathCommands) {
 # ─── Export ──────────────────────────────────────────────────────────────────
 Export-ModuleMember -Function Get-GhostpathFile, Show-GhostpathStatus, Invoke-GhostpathInsert
 
-Write-Host "  🪶 ghostpath loaded - active file path available via Tab" -ForegroundColor DarkGray
+Write-Host "  [ghostpath] loaded - active file path available via Tab" -ForegroundColor DarkGray
