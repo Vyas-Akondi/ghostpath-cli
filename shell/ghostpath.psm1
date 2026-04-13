@@ -4,7 +4,8 @@
 # =============================================================================
 
 $GHOSTPATH_TMP_FILE = if ($IsWindows) {
-  Join-Path ($env:TEMP ?? "C:\Temp") "_ghostpath_active_file"
+  $tempDir = if ($env:TEMP) { $env:TEMP } else { "C:\Temp" }
+  Join-Path $tempDir "_ghostpath_active_file"
 } else {
   "/tmp/_ghostpath_active_file"
 }
@@ -130,4 +131,4 @@ foreach ($cmd in $ghostpathCommands) {
 # ─── Export ──────────────────────────────────────────────────────────────────
 Export-ModuleMember -Function Get-GhostpathFile, Show-GhostpathStatus, Invoke-GhostpathInsert
 
-Write-Host "  🪶 ghostpath loaded — active file path available via Tab" -ForegroundColor DarkGray
+Write-Host "  🪶 ghostpath loaded - active file path available via Tab" -ForegroundColor DarkGray
