@@ -99,6 +99,8 @@ If you have **zsh-autosuggestions** installed, ghostpath also feeds into it as a
 
 ## CLI Commands
 
+*(Note: If installed **globally**, run these commands directly. If installed **locally**, prefix them with `npx` (e.g., `npx ghostpath status`).)*
+
 ```bash
 ghostpath setup          # Re-run shell integration setup
 ghostpath status         # Show what file path ghostpath currently sees

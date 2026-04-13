@@ -13,14 +13,14 @@ function getZshrcPath() {
   return path.join(os.homedir(), '.zshrc');
 }
 
-function getPowerShellProfilePath() {
+function getPowerShellProfilePaths() {
   if (process.platform === 'win32') {
-    return path.join(
-      process.env.USERPROFILE || os.homedir(),
-      'Documents', 'PowerShell', 'Microsoft.PowerShell_profile.ps1'
-    );
+    return [
+      path.join(process.env.USERPROFILE || os.homedir(), 'Documents', 'PowerShell', 'Microsoft.PowerShell_profile.ps1'),
+      path.join(process.env.USERPROFILE || os.homedir(), 'Documents', 'WindowsPowerShell', 'Microsoft.PowerShell_profile.ps1')
+    ];
   }
-  return path.join(os.homedir(), '.config', 'powershell', 'Microsoft.PowerShell_profile.ps1');
+  return [path.join(os.homedir(), '.config', 'powershell', 'Microsoft.PowerShell_profile.ps1')];
 }
 
 function getShellPluginPath() {
@@ -55,31 +55,33 @@ ${ZSH_MARKER_END}
 }
 
 function injectPowerShell() {
-  const profilePath = getPowerShellProfilePath();
+  const profilePaths = getPowerShellProfilePaths();
   const pluginPath = getPwshPluginPath();
 
-  // Ensure profile directory exists
-  const profileDir = path.dirname(profilePath);
-  if (!fs.existsSync(profileDir)) {
-    fs.mkdirSync(profileDir, { recursive: true });
-  }
+  profilePaths.forEach(profilePath => {
+    // Ensure profile directory exists
+    const profileDir = path.dirname(profilePath);
+    if (!fs.existsSync(profileDir)) {
+      fs.mkdirSync(profileDir, { recursive: true });
+    }
 
-  let content = fs.existsSync(profilePath) ? fs.readFileSync(profilePath, 'utf8') : '';
+    let content = fs.existsSync(profilePath) ? fs.readFileSync(profilePath, 'utf8') : '';
 
-  if (content.includes(PWSH_MARKER)) {
-    console.log('  [ghostpath] PowerShell integration already installed, skipping.');
-    return;
-  }
+    if (content.includes(PWSH_MARKER)) {
+      console.log(`  [ghostpath] PowerShell integration already installed in ${path.basename(path.dirname(profilePath))}, skipping.`);
+      return;
+    }
 
-  const injection = `
+    const injection = `
 ${PWSH_MARKER}
 # Ghostpath: auto-fill VS Code active file path via tab completion
 Import-Module "${pluginPath}"
 ${PWSH_MARKER_END}
 `;
 
-  fs.appendFileSync(profilePath, injection);
-  console.log(`  [ghostpath] ✅ PowerShell integration added to ${profilePath}`);
+    fs.appendFileSync(profilePath, injection);
+    console.log(`  [ghostpath] ✅ PowerShell integration added to ${profilePath}`);
+  });
   console.log('  [ghostpath] Restart PowerShell terminal to activate.');
 }
 
