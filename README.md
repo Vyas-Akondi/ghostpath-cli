@@ -37,18 +37,30 @@ npm install -g ghostpath-cli
 ```
 
 This will automatically run a post-install script that:
-1. **Injects shell integration** into your `~/.zshrc` and PowerShell profile.
+1. **Injects shell integration** into your `~/.zshrc` (macOS/Linux) and `$PROFILE` (Windows).
 2. **Automatically attempts to install** the companion VS Code Extension if you have the `code` CLI available.
 
 ---
 
 ## VS Code Extension Setup
 
-If the automatic installation doesn't work, you can easily install the bundled VS Code extension manually:
+If the automatic installation doesn't work, you can easily install the bundled VS Code extension manually. The command differs slightly depending on your Operating System:
 
+### macOS / Linux
 ```bash
 # Install the bundled VSIX manually
 code --install-extension $(npm root -g)/ghostpath-cli/vscode-extension/ghostpath-vscode.vsix
+```
+
+### Windows (PowerShell)
+Due to a quirk with how npm outputs directory paths in PowerShell, you must trim the path first so VS Code doesn't try to open the extension as a text file!
+
+```powershell
+# Get the global node_modules path and trim it
+$extPath = Join-Path (npm root -g).Trim() "ghostpath-cli\vscode-extension\ghostpath-vscode.vsix"
+
+# Install the extension correctly
+code --install-extension "$extPath"
 ```
 
 Or manually copy `vscode-extension/src/extension.js` into your own extension.
@@ -102,16 +114,23 @@ ghostpath setup --pwsh   # Setup PowerShell only
 
 ## Manual Shell Setup
 
-If `postinstall` didn't run, add to your `~/.zshrc` manually:
+If the `postinstall` script didn't run automatically, you will need to add the module to your shell profile manually.
+
+### macOS / Linux (Zsh)
+Add the following line to your `~/.zshrc` file:
 
 ```zsh
+# Load ghostpath shell integration
 source "$(npm root -g)/ghostpath-cli/shell/ghostpath.zsh"
 ```
 
-For PowerShell, add to your `$PROFILE`:
+### Windows (PowerShell)
+Add the following lines to your PowerShell `$PROFILE` file (you can open it by typing `notepad $PROFILE` in your terminal):
 
 ```powershell
-Import-Module "$(npm root -g)/ghostpath-cli/shell/ghostpath.psm1"
+# Load ghostpath PowerShell module
+$ghostpathModule = Join-Path (npm root -g).Trim() "ghostpath-cli\shell\ghostpath.psm1"
+Import-Module "$ghostpathModule"
 ```
 
 ---
