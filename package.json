@@ -1,0 +1,24 @@
+{
+  "name": "ghostpath-cli",
+  "version": "1.0.0",
+  "description": "Auto-fill current VS Code active file path in terminal via tab/ghost suggestion",
+  "main": "index.js",
+  "bin": {
+    "ghostpath": "./bin/ghostpath.js"
+  },
+  "scripts": {
+    "postinstall": "node bin/ghostpath.js setup --silent"
+  },
+  "keywords": ["vscode", "terminal", "autocomplete", "file-path", "zsh", "powershell"],
+  "author": "Vyas Akondi <vyas.akondi@zohomail.in>",
+  "license": "MIT",
+  "files": [
+    "bin/",
+    "shell/",
+    "vscode-extension/",
+    "index.js"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
