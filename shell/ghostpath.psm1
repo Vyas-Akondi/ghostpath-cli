@@ -58,24 +58,25 @@ Set-PSReadLineKeyHandler -Key Tab -ScriptBlock {
     $cursor = $null
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
 
-    # If nothing typed or user wants to append, provide ghostpath path as completion
-    $completions = [System.Management.Automation.CommandCompletion]::CompleteInput(
-      $line, $cursor, $null
-    )
+    $insertDirectly = $false
+    if ([string]::IsNullOrWhiteSpace($line)) {
+      # If line is empty, directly insert the ghostpath file
+      $insertDirectly = $true
+    } else {
+      try {
+        $completions = [System.Management.Automation.CommandCompletion]::CompleteInput($line, $cursor, $null)
+        if ($null -eq $completions -or $completions.CompletionMatches.Count -eq 0) {
+          $insertDirectly = $true
+        }
+      } catch {
+        # Fallback if internal parser throws "Sequence contains no elements" or other errors in PS 5.1
+        $insertDirectly = $true
+      }
+    }
 
-    # Prepend ghostpath file path to completions
-    $ghostpathCompletion = [System.Management.Automation.CompletionResult]::new(
-      $filePath,
-      "[ghostpath] $filePath",
-      [System.Management.Automation.CompletionResultType]::ParameterValue,
-      "Current VS Code active file"
-    )
-
-    if ($completions.CompletionMatches.Count -eq 0) {
-      # Only ghostpath suggestion available — insert directly
+    if ($insertDirectly) {
       [Microsoft.PowerShell.PSConsoleReadLine]::Insert($filePath)
     } else {
-      # Show menu with ghostpath path at top
       [Microsoft.PowerShell.PSConsoleReadLine]::TabCompleteNext()
     }
   } else {
