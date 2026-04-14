@@ -3,6 +3,7 @@
   "displayName": "Ghostpath - Active File Path",
   "description": "Writes the active file's relative path to a temp file for ghostpath terminal integration",
   "version": "1.0.0",
+  "author": "Vyas Akondi <vyas.akondi@zohomail.in>",
   "engines": {
     "vscode": "^1.74.0"
   },
