@@ -96,7 +96,9 @@ _ghostpath_completion() {
   fi
 }
 
-compdef _ghostpath_completion ghostpath
+if type compdef > /dev/null 2>&1; then
+  compdef _ghostpath_completion ghostpath
+fi
 
 # ─── Zsh autosuggestion style (if zsh-autosuggestions is installed) ───────────
 # Integrates with zsh-autosuggestions to show ghostpath path as a suggestion
