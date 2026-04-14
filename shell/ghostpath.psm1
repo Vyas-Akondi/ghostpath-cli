@@ -62,6 +62,10 @@ Set-PSReadLineKeyHandler -Key Tab -ScriptBlock {
     if ([string]::IsNullOrWhiteSpace($line)) {
       # If line is empty, directly insert the ghostpath file
       $insertDirectly = $true
+    } elseif ($cursor -gt 0 -and [char]::IsWhiteSpace($line[$cursor - 1])) {
+      # If the character right before the cursor is a space, the user just pressed space then Tab.
+      # Directly insert the ghostpath file for any arbitrary command (like ./main.js <Tab>)
+      $insertDirectly = $true
     } else {
       try {
         $completions = [System.Management.Automation.CommandCompletion]::CompleteInput($line, $cursor, $null)
