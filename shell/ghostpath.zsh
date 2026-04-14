@@ -7,16 +7,18 @@
 GHOSTPATH_TMP_FILE="/tmp/_ghostpath_active_file"
 
 # ─── Get current active file path ────────────────────────────────────────────
+# We write directly to the REPLY global to avoid subshell performance overhead on macOS
 _ghostpath_get_path() {
-  if [[ -f "$GHOSTPATH_TMP_FILE" ]]; then
-    cat "$GHOSTPATH_TMP_FILE" 2>/dev/null
+  REPLY=""
+  if [[ -r "$GHOSTPATH_TMP_FILE" ]]; then
+    read -r REPLY < "$GHOSTPATH_TMP_FILE" 2>/dev/null
   fi
 }
 
 # ─── ZLE Widget: append file path at cursor ──────────────────────────────────
 _ghostpath_insert_path() {
-  local file_path
-  file_path=$(_ghostpath_get_path)
+  _ghostpath_get_path
+  local file_path=$REPLY
 
   if [[ -n "$file_path" ]]; then
     # Append file path to whatever is already typed
@@ -33,21 +35,15 @@ zle -N _ghostpath_insert_path
 # Override Tab to use ghostpath insert if a file path is available,
 # otherwise fall back to normal completion
 _ghostpath_smart_tab() {
-  local file_path
-  file_path=$(_ghostpath_get_path)
+  _ghostpath_get_path
+  local file_path=$REPLY
 
-  if [[ -n "$file_path" ]]; then
-    # Show ghost suggestion first, then on second tab insert it
-    if [[ "$GHOSTPATH_GHOST_SHOWN" == "1" ]]; then
-      LBUFFER="${LBUFFER}${file_path}"
-      GHOSTPATH_GHOST_SHOWN="0"
-      zle reset-prompt
-    else
-      GHOSTPATH_GHOST_SHOWN="1"
-      zle reset-prompt
-    fi
+  # If we have an active file and the user hasn't started typing a word (empty line or trailing space)
+  # Directly inject the path to skip any slow completions and match PowerShell behavior
+  if [[ -n "$file_path" ]] && [[ -z "$LBUFFER" || "$LBUFFER" == *" " ]]; then
+    LBUFFER="${LBUFFER}${file_path}"
   else
-    GHOSTPATH_GHOST_SHOWN="0"
+    # Fallback to normal Zsh tab completion
     zle expand-or-complete
   fi
 }
@@ -55,23 +51,11 @@ _ghostpath_smart_tab() {
 zle -N _ghostpath_smart_tab
 bindkey '^I' _ghostpath_smart_tab   # Tab key
 
-# Reset ghost state when user types anything
-_ghostpath_reset_ghost() {
-  GHOSTPATH_GHOST_SHOWN="0"
-}
-zle -N _ghostpath_reset_ghost
-
-# Hook into keymap to reset ghost on any character typed
-autoload -Uz add-zle-hook-widget 2>/dev/null
-add-zle-hook-widget zle-line-pre-redraw _ghostpath_noop 2>/dev/null
-
-_ghostpath_noop() { : }
-
 # ─── Ghost suggestion in RPROMPT ─────────────────────────────────────────────
 # Shows the file path as a dimmed ghost on the right side of the prompt
 _ghostpath_precmd() {
-  local file_path
-  file_path=$(_ghostpath_get_path)
+  _ghostpath_get_path
+  local file_path=$REPLY
 
   if [[ -n "$file_path" ]]; then
     # Show ghost suggestion in right prompt (dimmed gray)
@@ -88,8 +72,8 @@ add-zsh-hook precmd _ghostpath_precmd
 # ─── Completion function ──────────────────────────────────────────────────────
 # Allows `ghostpath<Tab>` to complete to the active file path
 _ghostpath_completion() {
-  local file_path
-  file_path=$(_ghostpath_get_path)
+  _ghostpath_get_path
+  local file_path=$REPLY
 
   if [[ -n "$file_path" ]]; then
     compadd -Q -- "$file_path"
@@ -104,8 +88,8 @@ fi
 # Integrates with zsh-autosuggestions to show ghostpath path as a suggestion
 if (( ${+functions[_zsh_autosuggest_strategy_history]} )); then
   _zsh_autosuggest_strategy_ghostpath() {
-    local file_path
-    file_path=$(_ghostpath_get_path)
+    _ghostpath_get_path
+    local file_path=$REPLY
     if [[ -n "$file_path" && -z "$1" ]]; then
       suggestion="$file_path"
     fi
